@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nicat & Liana - Xatirələrinizi Paylaşın</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="/images/logo.png">
+</head>
+<body>
+  <!-- Upload Header Background -->
+  <div class="upload-hero">
+    <div class="upload-hero-bg"></div>
+    <div class="upload-hero-overlay"></div>
+    <div class="upload-hero-content">
+      <img src="/images/logo.png" alt="N&L" class="upload-hero-logo">
+      <h1 class="upload-hero-title">Nicat & Liana</h1>
+      <p class="upload-hero-subtitle">Xatirələrinizi bizimlə paylaşın</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Wedding Selection (shown if no toy param) -->
+    <div class="card" id="weddingSelectCard">
+      <div class="card-header">&#128141; Toyu seçin</div>
+      <div class="wedding-select-grid">
+        <div class="wedding-option" onclick="selectWedding('gurcustan')">
+          <div class="wedding-option-img">
+            <img src="/images/georgia.png" alt="Gürcüstan" onerror="this.parentElement.innerHTML='&#127468;&#127466;'">
+          </div>
+          <div class="wedding-option-title">Gürcüstan Toyu</div>
+          <div class="wedding-option-date">14 İyun 2026</div>
+        </div>
+        <div class="wedding-option" onclick="selectWedding('turkiye')">
+          <div class="wedding-option-img">
+            <img src="/images/turkey.png" alt="Türkiyə" onerror="this.parentElement.innerHTML='&#127481;&#127479;'">
+          </div>
+          <div class="wedding-option-title">Türkiyə Toyu</div>
+          <div class="wedding-option-date">21 İyun 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Section (hidden until wedding selected) -->
+    <div id="uploadSection" style="display:none">
+      <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div class="wedding-badge" id="weddingBadge"></div>
+      </div>
+
+      <!-- Upload Card -->
+      <div class="card" id="uploadCard">
+        <div class="card-header">
+          &#128247; Şəkil & Video Yükləyin
+        </div>
+
+        <!-- Guest Name -->
+        <div class="form-group">
+          <label class="form-label" for="guestName">Adınız (istəyə bağlı)</label>
+          <input type="text" id="guestName" class="form-input" placeholder="Adınızı yazın...">
+        </div>
+
+        <!-- Upload Area -->
+        <div class="upload-area" id="uploadArea">
+          <img src="/images/upload-icon.png" alt="" class="upload-area-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+          <span class="upload-area-icon" style="display:none">&#128247;</span>
+          <p class="upload-area-text">Şəkil və ya video seçmək üçün toxunun</p>
+          <p class="upload-area-hint">və ya faylları sürükləyib buraxın</p>
+          <p class="upload-area-hint">JPG, PNG, HEIC, MP4, MOV - Maks. 100MB</p>
+        </div>
+
+        <input type="file" id="fileInput" multiple accept="image/*,video/*" style="display:none">
+
+        <!-- Camera Buttons -->
+        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+          <button class="btn btn-outline btn-sm" id="cameraBtn" style="flex:1" onclick="openCamera('image')">
+            &#128248; Şəkil Çək
+          </button>
+          <button class="btn btn-outline btn-sm" id="videoBtn" style="flex:1" onclick="openCamera('video')">
+            &#127909; Video Çək
+          </button>
+        </div>
+
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+        <input type="file" id="videoCameraInput" accept="video/*" capture="environment" style="display:none">
+
+        <!-- File List -->
+        <ul class="file-list" id="fileList"></ul>
+
+        <!-- Progress -->
+        <div class="progress-container" id="progressContainer">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <p class="progress-text" id="progressText">Yüklənir... %0</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div class="alert alert-error" id="errorAlert" style="display:none"></div>
+
+        <!-- Upload Button -->
+        <button class="btn btn-primary" id="uploadBtn" disabled onclick="uploadFiles()">
+          &#128228; Yüklə
+        </button>
+      </div>
+
+      <!-- Success Message -->
+      <div class="card" id="successCard" style="display:none">
+        <div class="success-container">
+          <img src="/images/success.png" alt="" class="success-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+          <span class="success-icon" style="display:none">&#10004;&#65039;</span>
+          <h2 class="success-title">Təşəkkürlər!</h2>
+          <p class="success-message" id="successMessage">Fayllarınız uğurla yükləndi.</p>
+          <button class="btn btn-outline" onclick="resetForm()">
+            &#128247; Daha Çox Yüklə
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p style="text-align:center; color: var(--text-muted); font-size: 0.75rem; margin-top: 2rem;">
+      Nicat & Liana &#10084; Toy Xatirələri
+    </p>
+  </div>
+
+  <script src="/js/upload.js"></script>
+</body>
+</html>
