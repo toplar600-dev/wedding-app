@@ -16,8 +16,15 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'nicatliana2024';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const MAX_FILE_SIZE = (parseInt(process.env.MAX_FILE_SIZE_MB) || 100) * 1024 * 1024;
 
+// ============ DATA DIRECTORIES ============
+const DATA_DIR = path.join(__dirname, 'data');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+const QR_DIR = path.join(DATA_DIR, 'qr-codes');
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+fs.mkdirSync(QR_DIR, { recursive: true });
+
 // ============ JSON DATABASE ============
-const DB_PATH = path.join(__dirname, 'database.json');
+const DB_PATH = path.join(DATA_DIR, 'database.json');
 
 function loadDB() {
   try {
@@ -71,7 +78,7 @@ const allowedMimes = [
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const wedding = req.body.wedding_type || 'gurcustan';
-    const dir = path.join(__dirname, 'uploads', wedding);
+    const dir = path.join(UPLOADS_DIR, wedding);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
@@ -236,7 +243,7 @@ app.get('/api/admin/download/:id', requireAdmin, (req, res) => {
   if (!file) return res.status(404).json({ error: 'Fayl tapılmadı' });
 
   const wedding = file.wedding_type || 'gurcustan';
-  const filePath = path.join(__dirname, 'uploads', wedding, file.saved_name);
+  const filePath = path.join(UPLOADS_DIR, wedding, file.saved_name);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Fayl serverdə tapılmadı' });
 
   res.download(filePath, file.original_name);
@@ -248,7 +255,7 @@ app.get('/api/admin/preview/:id', requireAdmin, (req, res) => {
   if (!file) return res.status(404).json({ error: 'Fayl tapılmadı' });
 
   const wedding = file.wedding_type || 'gurcustan';
-  const filePath = path.join(__dirname, 'uploads', wedding, file.saved_name);
+  const filePath = path.join(UPLOADS_DIR, wedding, file.saved_name);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Fayl serverdə tapılmadı' });
 
   res.sendFile(filePath);
@@ -274,7 +281,7 @@ app.get('/api/admin/download-all', requireAdmin, (req, res) => {
 
   for (const file of files) {
     const w = file.wedding_type || 'gurcustan';
-    const filePath = path.join(__dirname, 'uploads', w, file.saved_name);
+    const filePath = path.join(UPLOADS_DIR, w, file.saved_name);
     if (fs.existsSync(filePath)) {
       const weddingLabel = w === 'gurcustan' ? 'Gurcustan' : 'Turkiye';
       archive.file(filePath, { name: `${weddingLabel}/${file.original_name}` });
@@ -291,7 +298,7 @@ app.delete('/api/admin/files/:id', requireAdmin, (req, res) => {
 
   const file = db.uploads[fileIndex];
   const wedding = file.wedding_type || 'gurcustan';
-  const filePath = path.join(__dirname, 'uploads', wedding, file.saved_name);
+  const filePath = path.join(UPLOADS_DIR, wedding, file.saved_name);
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
   db.uploads.splice(fileIndex, 1);
@@ -305,12 +312,11 @@ app.post('/api/admin/generate-qr', requireAdmin, async (req, res) => {
   try {
     const baseUrl = req.body.base_url || BASE_URL;
     const weddingType = req.body.wedding_type || 'gurcustan';
-    const qrDir = path.join(__dirname, 'qr-codes');
-    fs.mkdirSync(qrDir, { recursive: true });
+    fs.mkdirSync(QR_DIR, { recursive: true });
 
     const url = `${baseUrl}/upload.html?toy=${weddingType}`;
     const filename = `qr-${weddingType}.png`;
-    const filepath = path.join(qrDir, filename);
+    const filepath = path.join(QR_DIR, filename);
 
     await QRCode.toFile(filepath, url, {
       width: 400,
@@ -328,10 +334,9 @@ app.post('/api/admin/generate-qr', requireAdmin, async (req, res) => {
 });
 
 app.get('/api/admin/qr-codes', requireAdmin, (req, res) => {
-  const qrDir = path.join(__dirname, 'qr-codes');
-  if (!fs.existsSync(qrDir)) return res.json({ qrCodes: [] });
+  if (!fs.existsSync(QR_DIR)) return res.json({ qrCodes: [] });
 
-  const files = fs.readdirSync(qrDir)
+  const files = fs.readdirSync(QR_DIR)
     .filter(f => f.endsWith('.png'))
     .map(f => {
       const weddingMatch = f.match(/qr-(\w+)\.png/);
@@ -349,20 +354,19 @@ app.get('/api/admin/qr-codes', requireAdmin, (req, res) => {
 });
 
 app.get('/api/admin/download-qr-all', requireAdmin, (req, res) => {
-  const qrBaseDir = path.join(__dirname, 'qr-codes');
-  if (!fs.existsSync(qrBaseDir)) return res.status(404).json({ error: 'QR kodlar hələ yaradılmayıb' });
+  if (!fs.existsSync(QR_DIR)) return res.status(404).json({ error: 'QR kodlar hələ yaradılmayıb' });
 
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', 'attachment; filename=qr-kodlar.zip');
 
   const archive = archiver('zip', { zlib: { level: 5 } });
   archive.pipe(res);
-  archive.directory(qrBaseDir, 'qr-kodlar');
+  archive.directory(QR_DIR, 'qr-kodlar');
   archive.finalize();
 });
 
 // Static QR code files
-app.use('/qr-codes', requireAdmin, express.static(path.join(__dirname, 'qr-codes')));
+app.use('/qr-codes', requireAdmin, express.static(QR_DIR));
 
 // ============ HTML ROUTES ============
 app.get('/', (req, res) => {
